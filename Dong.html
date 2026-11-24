@@ -1,0 +1,2051 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محاسبه‌گر هوشمند دونگ | تقسیم هزینه‌ها</title>
+    <style>
+        /* فونت و متغیرهای پایه طراحی */
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --primary-light: #eef2ff;
+            --primary-border: #c7d2fe;
+            --success: #059669;
+            --success-bg: #ecfdf5;
+            --success-border: #a7f3d0;
+            --danger: #e11d48;
+            --danger-bg: #fff1f2;
+            --danger-border: #fecdd3;
+            --warning: #d97706;
+            --warning-bg: #fffbeb;
+            --warning-border: #fde68a;
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-subtle: #f1f5f9;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
+            --border-color: #e2e8f0;
+            --radius-lg: 16px;
+            --radius-xl: 22px;
+            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.03);
+            --shadow-md: 0 4px 12px rgba(79, 70, 229, 0.18);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding-bottom: 48px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        button, input {
+            font-family: inherit;
+        }
+
+        /* هدر بالای صفحه */
+        .app-header {
+            background: linear-gradient(135deg, #4338ca 0%, #4f46e5 50%, #6d28d9 100%);
+            color: #ffffff;
+            text-align: center;
+            padding: 36px 16px 56px;
+            box-shadow: 0 4px 20px rgba(67, 56, 202, 0.15);
+        }
+
+        .header-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 54px;
+            height: 54px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            margin-bottom: 12px;
+            color: #fde047;
+        }
+
+        .app-header h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+            letter-spacing: -0.01em;
+        }
+
+        .app-header p {
+            font-size: 0.92rem;
+            color: #e0e7ff;
+            max-width: 540px;
+            margin: 0 auto;
+            font-weight: 300;
+        }
+
+        /* کانتینر اصلی */
+        .container {
+            max-width: 760px;
+            margin: -28px auto 0;
+            padding: 0 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        /* کارت‌ها */
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            padding: 22px;
+        }
+
+        @media (min-width: 640px) {
+            .card {
+                padding: 28px;
+            }
+            .app-header h1 {
+                font-size: 1.85rem;
+            }
+        }
+
+        .card-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding-bottom: 16px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--bg-subtle);
+        }
+
+        .card-title-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .title-bar {
+            width: 6px;
+            height: 22px;
+            border-radius: 99px;
+            background-color: var(--primary);
+        }
+
+        .title-bar.green {
+            background-color: var(--success);
+        }
+
+        .title-bar.gray {
+            background-color: var(--text-light);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .badge-count {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 99px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* دکمه‌ها */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            border: 1px solid transparent;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            user-select: none;
+        }
+
+        .btn:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-sm {
+            font-size: 0.8rem;
+            padding: 7px 12px;
+            border-radius: 10px;
+        }
+
+        .btn-amber {
+            background-color: var(--warning-bg);
+            color: var(--warning);
+            border-color: var(--warning-border);
+        }
+
+        .btn-amber:hover {
+            background-color: #fef3c7;
+        }
+
+        .btn-gray {
+            background-color: var(--bg-subtle);
+            color: var(--text-muted);
+        }
+
+        .btn-gray:hover {
+            background-color: #e2e8f0;
+            color: var(--text-main);
+        }
+
+        .btn-outline {
+            background-color: #ffffff;
+            color: var(--text-muted);
+            border-color: var(--border-color);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            border-color: var(--primary-border);
+        }
+
+        .btn-outline.active {
+            background-color: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: #ffffff;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: #ffffff;
+        }
+
+        .btn-success:hover {
+            background-color: #047857;
+        }
+
+        .btn-icon-danger {
+            background: transparent;
+            color: var(--danger);
+            padding: 8px;
+            border-radius: 10px;
+        }
+
+        .btn-icon-danger:hover:not(:disabled) {
+            background-color: var(--danger-bg);
+        }
+
+        .btn-icon-danger:disabled {
+            color: #cbd5e1;
+        }
+
+        /* لیست افراد */
+        .participants-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .person-card {
+            background-color: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 14px;
+            transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+            animation: slideIn 0.22s ease-out;
+        }
+
+        .person-card:focus-within {
+            background-color: #ffffff;
+            border-color: #a5b4fc;
+            box-shadow: 0 2px 10px rgba(79, 70, 229, 0.06);
+        }
+
+        .person-main-row {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        @media (min-width: 640px) {
+            .person-main-row {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        .person-name-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .person-index {
+            width: 28px;
+            height: 28px;
+            border-radius: 9px;
+            background-color: var(--primary);
+            color: #ffffff;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .input-name {
+            width: 100%;
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 11px;
+            padding: 9px 12px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-main);
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        .input-name:focus {
+            border-color: var(--primary);
+        }
+
+        .input-name::placeholder {
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .person-controls-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        @media (min-width: 640px) {
+            .person-controls-group {
+                width: 350px;
+                flex-shrink: 0;
+            }
+        }
+
+        .amount-wrapper {
+            position: relative;
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-amount {
+            width: 100%;
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 11px;
+            padding: 9px 12px 9px 48px;
+            text-align: left;
+            direction: ltr;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-main);
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        .input-amount:focus {
+            border-color: var(--primary);
+        }
+
+        .input-amount::placeholder {
+            color: #cbd5e1;
+        }
+
+        .currency-suffix {
+            position: absolute;
+            left: 11px;
+            font-size: 0.74rem;
+            font-weight: 500;
+            color: var(--text-light);
+            pointer-events: none;
+            user-select: none;
+        }
+
+        /* باکس نمایش جمع زنده در حالت ریز خرج */
+        .itemized-total-box {
+            width: 100%;
+            background-color: var(--primary-light);
+            border: 1px solid var(--primary-border);
+            border-radius: 11px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+        }
+
+        .itemized-total-label {
+            font-size: 0.72rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .itemized-total-value {
+            font-size: 0.9rem;
+            font-weight: 800;
+            color: var(--primary-hover);
+        }
+
+        /* بخش کشویی ریز خرج */
+        .itemized-drawer {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed #cbd5e1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            animation: slideIn 0.2s ease-out;
+        }
+
+        .drawer-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            font-size: 0.8rem;
+        }
+
+        .drawer-title {
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .link-reset-mode {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: underline;
+            padding: 2px 4px;
+        }
+
+        .link-reset-mode:hover {
+            color: var(--danger);
+        }
+
+        .expense-items-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .expense-item-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 8px;
+            align-items: center;
+            animation: slideIn 0.18s ease-out;
+        }
+
+        @media (max-width: 480px) {
+            .expense-item-row {
+                grid-template-columns: 1fr 125px auto;
+                gap: 6px;
+            }
+        }
+
+        .input-item-title {
+            width: 100%;
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 8px 10px;
+            font-size: 0.85rem;
+            color: var(--text-main);
+            outline: none;
+        }
+
+        .input-item-title:focus {
+            border-color: var(--primary);
+        }
+
+        .input-item-amount {
+            width: 100%;
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 8px 10px 8px 44px;
+            text-align: left;
+            direction: ltr;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-main);
+            outline: none;
+        }
+
+        .input-item-amount:focus {
+            border-color: var(--primary);
+        }
+
+        .btn-add-item {
+            align-self: flex-start;
+            background-color: var(--primary-light);
+            color: var(--primary);
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 10px;
+        }
+
+        .btn-add-item:hover {
+            background-color: #e0e7ff;
+        }
+
+        /* دکمه‌های عملیاتی پایین فرم */
+        .form-footer-actions {
+            margin-top: 22px;
+            padding-top: 18px;
+            border-top: 1px solid var(--bg-subtle);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        @media (min-width: 640px) {
+            .form-footer-actions {
+                flex-direction: row;
+            }
+            .btn-add-person {
+                flex: 1;
+            }
+            .btn-calculate {
+                flex: 1.5;
+            }
+        }
+
+        .btn-lg {
+            padding: 13px 20px;
+            font-size: 0.95rem;
+            border-radius: 14px;
+        }
+
+        /* بخش نتایج */
+        .results-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            animation: slideIn 0.25s ease-out;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* گرید آمار خلاصه */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+
+        @media (min-width: 640px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .stat-card {
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .stat-value.primary {
+            color: var(--primary);
+        }
+
+        .stat-unit {
+            font-size: 0.78rem;
+            font-weight: 400;
+            color: var(--text-muted);
+            margin-right: 4px;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .stat-icon.indigo {
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .stat-icon.emerald {
+            background-color: var(--success-bg);
+            color: var(--success);
+        }
+
+        /* کارت‌های تسویه حساب */
+        .settlements-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .settlement-empty {
+            background-color: var(--success-bg);
+            border: 1px solid var(--success-border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            text-align: center;
+        }
+
+        .settlement-empty-title {
+            font-weight: 800;
+            color: #065f46;
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+
+        .settlement-empty-desc {
+            font-size: 0.88rem;
+            color: var(--success);
+        }
+
+        .settlement-single {
+            background-color: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 15px 16px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .settlement-multi-group {
+            background-color: var(--warning-bg);
+            border: 1px solid var(--warning-border);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .multi-group-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(217, 119, 6, 0.2);
+        }
+
+        .multi-badge {
+            background-color: var(--danger-bg);
+            color: var(--danger);
+            border: 1px solid var(--danger-border);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 8px;
+        }
+
+        .multi-sub-item {
+            background-color: #ffffff;
+            border: 1px solid #fde68a;
+            border-radius: 12px;
+            padding: 12px 14px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .text-payer {
+            font-weight: 800;
+            color: var(--danger);
+        }
+
+        .text-receiver {
+            font-weight: 800;
+            color: var(--success);
+        }
+
+        .amount-pill {
+            display: inline-block;
+            background-color: var(--primary-light);
+            color: var(--primary);
+            font-weight: 800;
+            padding: 2px 10px;
+            border-radius: 8px;
+            margin: 0 3px;
+        }
+
+        /* فاکتور جامع */
+        .invoice-card {
+            background-color: #ffffff;
+            border: 2px dashed #cbd5e1;
+            border-radius: var(--radius-xl);
+            padding: 22px;
+        }
+
+        @media (min-width: 640px) {
+            .invoice-card {
+                padding: 30px;
+            }
+        }
+
+        .invoice-section-block {
+            margin-bottom: 22px;
+        }
+
+        .invoice-section-block:last-child {
+            margin-bottom: 0;
+        }
+
+        .invoice-step-title {
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .step-num {
+            width: 20px;
+            height: 20px;
+            border-radius: 6px;
+            background-color: var(--bg-subtle);
+            color: var(--text-main);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+        }
+
+        .invoice-person-box {
+            background-color: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+        }
+
+        .invoice-person-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .invoice-person-header.with-items {
+            padding-bottom: 8px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .invoice-items-ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 0.85rem;
+        }
+
+        .invoice-items-li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--text-muted);
+        }
+
+        .invoice-summary-box {
+            background-color: var(--primary-light);
+            border: 1px solid var(--primary-border);
+            border-radius: 14px;
+            padding: 15px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+
+        @media (min-width: 640px) {
+            .invoice-summary-box {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* تراز مالی افراد */
+        .balances-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        @media (min-width: 640px) {
+            .balances-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .balance-item {
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .balance-item.creditor {
+            border-color: var(--success-border);
+            background-color: rgba(236, 253, 245, 0.45);
+        }
+
+        .balance-item.debtor {
+            border-color: var(--danger-border);
+            background-color: rgba(255, 241, 242, 0.45);
+        }
+
+        .balance-badge {
+            font-size: 0.76rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 8px;
+            white-space: nowrap;
+        }
+
+        .balance-badge.creditor {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .balance-badge.debtor {
+            background-color: #ffe4e6;
+            color: #9f1239;
+        }
+
+        .balance-badge.settled {
+            background-color: var(--bg-subtle);
+            color: var(--text-muted);
+        }
+
+        /* اعلان شناور (Toast) */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background-color: #0f172a;
+            color: #ffffff;
+            padding: 12px 20px;
+            border-radius: 14px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.25);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+            z-index: 9999;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media print {
+            body {
+                background: #ffffff;
+                padding: 0;
+            }
+            .app-header, #input-section, .stats-grid, #settlements-card, #balances-card, .no-print {
+                display: none !important;
+            }
+            .container {
+                margin: 0;
+                max-width: 100%;
+                padding: 0;
+            }
+            .invoice-card {
+                border: 1px solid #cbd5e1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- سربرگ برنامه -->
+    <header class="app-header">
+        <div class="header-icon">
+            <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
+            </svg>
+        </div>
+        <h1>محاسبه‌گر هوشمند دونگ و فاکتور</h1>
+        <p>نام افراد و هزینه هر نفر را وارد کنید تا دقیق‌ترین روش تسویه‌حساب و فاکتور گروهی صادر شود.</p>
+    </header>
+
+    <!-- بدنه اصلی -->
+    <main class="container">
+
+        <!-- بخش ورود اطلاعات -->
+        <section id="input-section" class="card">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <span class="title-bar"></span>
+                    <h2 class="card-title">لیست افراد و هزینه‌ها</h2>
+                    <span id="participant-count-badge" class="badge-count">۲ نفر</span>
+                </div>
+
+                <div class="header-actions">
+                    <button type="button" id="btn-sample" class="btn btn-sm btn-amber">
+                        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        مثال تستی
+                    </button>
+                    <button type="button" id="btn-reset" class="btn btn-sm btn-gray">
+                        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        پاک کردن
+                    </button>
+                </div>
+            </div>
+
+            <!-- لیست کارت‌های افراد -->
+            <div id="participants-list" class="participants-list"></div>
+
+            <!-- دکمه‌های پایین فرم -->
+            <div class="form-footer-actions">
+                <button type="button" id="btn-add-person" class="btn btn-lg btn-gray btn-add-person">
+                    <svg width="19" height="19" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" style="color: var(--primary);">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                    </svg>
+                    افزودن نفر جدید
+                </button>
+
+                <button type="button" id="btn-calculate" class="btn btn-lg btn-primary btn-calculate">
+                    <svg width="19" height="19" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                    محاسبه دونگ و صدور فاکتور
+                </button>
+            </div>
+        </section>
+
+        <!-- بخش نتایج -->
+        <section id="results-section" class="results-wrapper hidden">
+
+            <!-- کارت‌های خلاصه آمار -->
+            <div class="stats-grid no-print">
+                <div class="stat-card">
+                    <div>
+                        <p class="stat-label">مجموع کل هزینه‌ها</p>
+                        <p class="stat-value">
+                            <span id="total-expense-display">۰</span>
+                            <span class="stat-unit">تومان</span>
+                        </p>
+                    </div>
+                    <div class="stat-icon indigo">
+                        <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div>
+                        <p class="stat-label">دونگ (سهم مساوی هر نفر)</p>
+                        <p class="stat-value primary">
+                            <span id="per-person-share-display">۰</span>
+                            <span class="stat-unit">تومان</span>
+                        </p>
+                    </div>
+                    <div class="stat-icon emerald">
+                        <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- کارت نحوه تسویه‌حساب -->
+            <div id="settlements-card" class="card no-print">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <span class="title-bar green"></span>
+                        <h3 class="card-title">نحوه تسویه‌حساب نهایی</h3>
+                    </div>
+                    <button type="button" id="btn-copy-top" class="btn btn-sm btn-primary">
+                        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                        </svg>
+                        کپی فاکتور کامل برای گروه
+                    </button>
+                </div>
+
+                <div id="settlements-container" class="settlements-list"></div>
+            </div>
+
+            <!-- کارت فاکتور جامع -->
+            <div id="invoice-section" class="invoice-card">
+                <div class="card-header">
+                    <div>
+                        <h3 class="card-title" style="font-size: 1.15rem;">صورت‌حساب و فاکتور جامع دونگ</h3>
+                        <p id="invoice-date" style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;"></p>
+                    </div>
+
+                    <div class="header-actions no-print">
+                        <button type="button" id="btn-print" class="btn btn-sm btn-gray">
+                            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                            </svg>
+                            چاپ / PDF
+                        </button>
+                        <button type="button" id="btn-copy-invoice" class="btn btn-sm btn-success">
+                            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                            </svg>
+                            کپی متن فاکتور
+                        </button>
+                    </div>
+                </div>
+
+                <div id="invoice-body"></div>
+            </div>
+
+            <!-- کارت تراز مالی افراد -->
+            <div id="balances-card" class="card no-print">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <span class="title-bar gray"></span>
+                        <h3 class="card-title" style="font-size: 1rem;">وضعیت تراز مالی هر نفر</h3>
+                    </div>
+                </div>
+                <div id="balances-list" class="balances-grid"></div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- اعلان شناور (Toast) -->
+    <div id="toast" class="toast" role="status" aria-live="polite">
+        <span id="toast-icon"></span>
+        <span id="toast-message"></span>
+    </div>
+
+    <script>
+        (function () {
+            'use strict';
+
+            // وضعیت مرکزی برنامه
+            let participants = [
+                { id: 1, name: '', isItemized: false, simpleAmount: '', items: [] },
+                { id: 2, name: '', isItemized: false, simpleAmount: '', items: [] }
+            ];
+            let nextPersonId = 3;
+            let nextItemId = 101;
+            let lastGeneratedReport = '';
+            let toastTimer = null;
+
+            const persianOrdinals = [
+                'اول', 'دوم', 'سوم', 'چهارم', 'پنجم', 'ششم', 'هفتم', 'هشتم', 'نهم', 'دهم',
+                'یازدهم', 'دوازدهم', 'سیزدهم', 'چهاردهم', 'پانزدهم', 'شانزدهم', 'هفدهم', 'هجدهم', 'نوزدهم', 'بیستم'
+            ];
+
+            // --- توابع کمکی تبدیل اعداد و فرمت‌دهی ---
+
+            function toPersianDigits(val) {
+                const digits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+                return String(val).replace(/\d/g, d => digits[Number(d)]);
+            }
+
+            function toEnglishDigits(str) {
+                if (str === null || str === undefined) return '';
+                return String(str)
+                    .replace(/[۰-۹]/g, d => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d)))
+                    .replace(/[٠-٩]/g, d => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)));
+            }
+
+            function getPlaceholderName(index) {
+                if (index < persianOrdinals.length) {
+                    return `نفر ${persianOrdinals[index]}`;
+                }
+                return `نفر ${toPersianDigits(index + 1)}`;
+            }
+
+            function escapeHtml(str) {
+                if (!str) return '';
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+            }
+
+            // فرمت عدد خالص به رشته سه‌رقمی فارسی (با رند کردن هوشمند اعشارهای ناچیز)
+            function formatCurrency(amount) {
+                if (!isFinite(amount) || Math.abs(amount) < 0.01) return '۰';
+                const rounded = Math.round(amount);
+                const parts = Math.abs(rounded).toString().split('.');
+                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                return toPersianDigits(parts.join('.'));
+            }
+
+            // فرمت لحظه‌ای فیلد ورودی هنگام تایپ یا پیست
+            function formatInputDisplay(rawVal) {
+                const eng = toEnglishDigits(rawVal).replace(/[^0-9]/g, '');
+                if (!eng) return '';
+                const normalized = eng.replace(/^0+(?=\d)/, '');
+                const withCommas = normalized.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                return toPersianDigits(withCommas);
+            }
+
+            // تبدیل متن فرمت‌شده به عدد خالص
+            function parseAmount(val) {
+                const cleaned = toEnglishDigits(val).replace(/[^0-9]/g, '');
+                if (!cleaned) return 0;
+                const num = parseInt(cleaned, 10);
+                return isNaN(num) || num < 0 ? 0 : num;
+            }
+
+            function getPersonTotal(person) {
+                if (person.isItemized) {
+                    return person.items.reduce((sum, item) => sum + parseAmount(item.amount), 0);
+                }
+                return parseAmount(person.simpleAmount);
+            }
+
+            // نمایش پیام اطلاع‌رسانی به جای alert
+            function showToast(message, type = 'info') {
+                const toast = document.getElementById('toast');
+                const iconEl = document.getElementById('toast-icon');
+                const msgEl = document.getElementById('toast-message');
+
+                const icons = {
+                    success: '✅',
+                    warning: '⚠️',
+                    info: 'ℹ️'
+                };
+
+                iconEl.textContent = icons[type] || 'ℹ️';
+                msgEl.textContent = message;
+                toast.classList.add('show');
+
+                if (toastTimer) clearTimeout(toastTimer);
+                toastTimer = setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 2800);
+            }
+
+            // --- رندر کارت‌های ورود اطلاعات ---
+
+            function renderParticipants() {
+                const listEl = document.getElementById('participants-list');
+                const badgeEl = document.getElementById('participant-count-badge');
+                badgeEl.textContent = `${toPersianDigits(participants.length)} نفر`;
+
+                const canDelete = participants.length > 2;
+
+                listEl.innerHTML = participants.map((person, index) => {
+                    const placeholderName = getPlaceholderName(index);
+                    const total = getPersonTotal(person);
+
+                    // فیلد مبلغ اصلی: یا قابل تایپ (حالت ساده) یا نمایشگر جمع زنده (حالت ریز خرج)
+                    const amountControlHtml = person.isItemized
+                        ? `
+                            <div class="itemized-total-box" title="مجموع خودکار اقلام ریز خرج">
+                                <span class="itemized-total-label">جمع ریز خرج:</span>
+                                <span id="person-total-${person.id}" class="itemized-total-value">${formatCurrency(total)} <small style="font-weight:500;">تومان</small></span>
+                            </div>
+                        `
+                        : `
+                            <div class="amount-wrapper">
+                                <input
+                                    type="text"
+                                    inputmode="numeric"
+                                    class="input-amount js-simple-amount"
+                                    data-person-id="${person.id}"
+                                    value="${escapeHtml(person.simpleAmount)}"
+                                    placeholder="۰"
+                                    aria-label="مبلغ هزینه ${placeholderName}"
+                                >
+                                <span class="currency-suffix">تومان</span>
+                            </div>
+                        `;
+
+                    // بخش کشویی ریز خرج (در صورت فعال بودن)
+                    let drawerHtml = '';
+                    if (person.isItemized) {
+                        const rowsHtml = person.items.map(item => `
+                            <div class="expense-item-row">
+                                <input
+                                    type="text"
+                                    class="input-item-title js-item-title"
+                                    data-person-id="${person.id}"
+                                    data-item-id="${item.id}"
+                                    value="${escapeHtml(item.title)}"
+                                    placeholder="شرح هزینه (مثلاً: ناهار، اسنپ)"
+                                >
+                                <div class="amount-wrapper">
+                                    <input
+                                        type="text"
+                                        inputmode="numeric"
+                                        class="input-item-amount js-item-amount"
+                                        data-person-id="${person.id}"
+                                        data-item-id="${item.id}"
+                                        value="${escapeHtml(item.amount)}"
+                                        placeholder="۰"
+                                    >
+                                    <span class="currency-suffix">تومان</span>
+                                </div>
+                                <button
+                                    type="button"
+                                    class="btn btn-icon-danger js-remove-item"
+                                    data-person-id="${person.id}"
+                                    data-item-id="${item.id}"
+                                    title="حذف این قلم"
+                                >
+                                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        `).join('');
+
+                        const displayName = person.name.trim() ? escapeHtml(person.name.trim()) : placeholderName;
+                        drawerHtml = `
+                            <div class="itemized-drawer">
+                                <div class="drawer-header">
+                                    <span class="drawer-title">
+                                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                        </svg>
+                                        ریز هزینه‌های ${displayName}:
+                                    </span>
+                                    <button type="button" class="link-reset-mode js-toggle-itemized" data-person-id="${person.id}">
+                                        بازگشت به مبلغ کلی
+                                    </button>
+                                </div>
+                                <div class="expense-items-list">
+                                    ${rowsHtml}
+                                </div>
+                                <button type="button" class="btn btn-add-item js-add-item" data-person-id="${person.id}">
+                                    + افزودن قلم هزینه جدید
+                                </button>
+                            </div>
+                        `;
+                    }
+
+                    return `
+                        <div class="person-card">
+                            <div class="person-main-row">
+                                <div class="person-name-group">
+                                    <span class="person-index">${toPersianDigits(index + 1)}</span>
+                                    <input
+                                        type="text"
+                                        class="input-name js-person-name"
+                                        data-person-id="${person.id}"
+                                        value="${escapeHtml(person.name)}"
+                                        placeholder="${placeholderName}"
+                                        aria-label="نام ${placeholderName}"
+                                    >
+                                </div>
+
+                                <div class="person-controls-group">
+                                    ${amountControlHtml}
+
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-outline ${person.isItemized ? 'active' : ''} js-toggle-itemized"
+                                        data-person-id="${person.id}"
+                                        title="${person.isItemized ? 'بازگشت به حالت مبلغ کلی' : 'ثبت ریز خرج برای این فرد'}"
+                                    >
+                                        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                                        </svg>
+                                        ریز خرج
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        class="btn btn-icon-danger js-remove-person"
+                                        data-person-id="${person.id}"
+                                        ${!canDelete ? 'disabled' : ''}
+                                        title="${canDelete ? 'حذف این نفر' : 'حداقل ۲ نفر باید در لیست باشند'}"
+                                    >
+                                        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            ${drawerHtml}
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // --- مدیریت رویدادها با Event Delegation (پایدار و بدون خطا) ---
+
+            const participantsListEl = document.getElementById('participants-list');
+
+            participantsListEl.addEventListener('input', function (e) {
+                const target = e.target;
+
+                if (target.classList.contains('js-person-name')) {
+                    const personId = Number(target.dataset.personId);
+                    const person = participants.find(p => p.id === personId);
+                    if (person) {
+                        person.name = target.value;
+                    }
+                    return;
+                }
+
+                if (target.classList.contains('js-simple-amount')) {
+                    const personId = Number(target.dataset.personId);
+                    const formatted = formatInputDisplay(target.value);
+                    target.value = formatted;
+                    const person = participants.find(p => p.id === personId);
+                    if (person) {
+                        person.simpleAmount = formatted;
+                    }
+                    return;
+                }
+
+                if (target.classList.contains('js-item-title')) {
+                    const personId = Number(target.dataset.personId);
+                    const itemId = Number(target.dataset.itemId);
+                    const person = participants.find(p => p.id === personId);
+                    if (person) {
+                        const item = person.items.find(i => i.id === itemId);
+                        if (item) item.title = target.value;
+                    }
+                    return;
+                }
+
+                if (target.classList.contains('js-item-amount')) {
+                    const personId = Number(target.dataset.personId);
+                    const itemId = Number(target.dataset.itemId);
+                    const formatted = formatInputDisplay(target.value);
+                    target.value = formatted;
+
+                    const person = participants.find(p => p.id === personId);
+                    if (person) {
+                        const item = person.items.find(i => i.id === itemId);
+                        if (item) item.amount = formatted;
+
+                        const totalEl = document.getElementById(`person-total-${personId}`);
+                        if (totalEl) {
+                            totalEl.innerHTML = `${formatCurrency(getPersonTotal(person))} <small style="font-weight:500;">تومان</small>`;
+                        }
+                    }
+                }
+            });
+
+            participantsListEl.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+                    e.preventDefault();
+                    calculateDong(true);
+                }
+            });
+
+            participantsListEl.addEventListener('click', function (e) {
+                const toggleBtn = e.target.closest('.js-toggle-itemized');
+                if (toggleBtn) {
+                    const personId = Number(toggleBtn.dataset.personId);
+                    toggleItemizedMode(personId);
+                    return;
+                }
+
+                const removePersonBtn = e.target.closest('.js-remove-person');
+                if (removePersonBtn && !removePersonBtn.disabled) {
+                    const personId = Number(removePersonBtn.dataset.personId);
+                    removeParticipant(personId);
+                    return;
+                }
+
+                const addItemBtn = e.target.closest('.js-add-item');
+                if (addItemBtn) {
+                    const personId = Number(addItemBtn.dataset.personId);
+                    addExpenseItem(personId);
+                    return;
+                }
+
+                const removeItemBtn = e.target.closest('.js-remove-item');
+                if (removeItemBtn) {
+                    const personId = Number(removeItemBtn.dataset.personId);
+                    const itemId = Number(removeItemBtn.dataset.itemId);
+                    removeExpenseItem(personId, itemId);
+                }
+            });
+
+            // --- عملیات روی افراد و اقلام ---
+
+            function toggleItemizedMode(personId) {
+                const person = participants.find(p => p.id === personId);
+                if (!person) return;
+
+                if (!person.isItemized) {
+                    const existingVal = parseAmount(person.simpleAmount);
+                    person.isItemized = true;
+                    if (person.items.length === 0) {
+                        person.items = [
+                            {
+                                id: nextItemId++,
+                                title: '',
+                                amount: existingVal > 0 ? person.simpleAmount : ''
+                            }
+                        ];
+                    }
+                } else {
+                    const totalFromItems = getPersonTotal(person);
+                    person.isItemized = false;
+                    person.simpleAmount = totalFromItems > 0 ? formatInputDisplay(String(totalFromItems)) : '';
+                }
+
+                renderParticipants();
+            }
+
+            function addExpenseItem(personId) {
+                const person = participants.find(p => p.id === personId);
+                if (!person) return;
+                person.items.push({
+                    id: nextItemId++,
+                    title: '',
+                    amount: ''
+                });
+                renderParticipants();
+            }
+
+            function removeExpenseItem(personId, itemId) {
+                const person = participants.find(p => p.id === personId);
+                if (!person) return;
+
+                if (person.items.length <= 1) {
+                    person.items[0].title = '';
+                    person.items[0].amount = '';
+                } else {
+                    person.items = person.items.filter(i => i.id !== itemId);
+                }
+                renderParticipants();
+            }
+
+            function addParticipant() {
+                participants.push({
+                    id: nextPersonId++,
+                    name: '',
+                    isItemized: false,
+                    simpleAmount: '',
+                    items: []
+                });
+                renderParticipants();
+                const nameInputs = document.querySelectorAll('.js-person-name');
+                if (nameInputs.length > 0) {
+                    nameInputs[nameInputs.length - 1].focus();
+                }
+            }
+
+            function removeParticipant(personId) {
+                if (participants.length <= 2) {
+                    showToast('حداقل تعداد افراد برای محاسبه دونگ ۲ نفر است.', 'warning');
+                    return;
+                }
+                participants = participants.filter(p => p.id !== personId);
+                renderParticipants();
+
+                const resultsEl = document.getElementById('results-section');
+                if (!resultsEl.classList.contains('hidden')) {
+                    calculateDong(false);
+                }
+            }
+
+            function loadSampleData() {
+                participants = [
+                    {
+                        id: 1,
+                        name: 'حسین',
+                        isItemized: true,
+                        simpleAmount: '',
+                        items: [
+                            { id: 101, title: 'کافه و نوشیدنی', amount: formatInputDisplay('140000') },
+                            { id: 102, title: 'کرایه اسنپ', amount: formatInputDisplay('60000') }
+                        ]
+                    },
+                    {
+                        id: 2,
+                        name: 'رضا',
+                        isItemized: false,
+                        simpleAmount: formatInputDisplay('100000'),
+                        items: []
+                    },
+                    {
+                        id: 3,
+                        name: 'سارا',
+                        isItemized: false,
+                        simpleAmount: '',
+                        items: []
+                    }
+                ];
+                nextPersonId = 4;
+                nextItemId = 103;
+                renderParticipants();
+                calculateDong(true);
+                showToast('مثال تستی با موفقیت بارگذاری و محاسبه شد.', 'info');
+            }
+
+            function resetAll() {
+                participants = [
+                    { id: 1, name: '', isItemized: false, simpleAmount: '', items: [] },
+                    { id: 2, name: '', isItemized: false, simpleAmount: '', items: [] }
+                ];
+                nextPersonId = 3;
+                nextItemId = 101;
+                lastGeneratedReport = '';
+                renderParticipants();
+                document.getElementById('results-section').classList.add('hidden');
+                showToast('همه اطلاعات پاک شد.', 'info');
+            }
+
+            // --- الگوریتم محاسبه دونگ و تسویه‌حساب بدون خطای ممیز شناور ---
+
+            function calculateDong(shouldScroll = true) {
+                const count = participants.length;
+                if (count < 2) return;
+
+                const processed = participants.map((p, index) => {
+                    const cleanName = p.name.trim() || getPlaceholderName(index);
+
+                    if (p.isItemized) {
+                        const validItems = p.items
+                            .map(item => ({
+                                title: item.title.trim() || 'هزینه متفرقه',
+                                amount: parseAmount(item.amount)
+                            }))
+                            .filter(item => item.amount > 0);
+
+                        const paid = validItems.reduce((sum, item) => sum + item.amount, 0);
+                        return {
+                            id: p.id,
+                            name: cleanName,
+                            hasItemizedDetails: validItems.length > 0,
+                            items: validItems,
+                            paid: paid
+                        };
+                    } else {
+                        const paid = parseAmount(p.simpleAmount);
+                        return {
+                            id: p.id,
+                            name: cleanName,
+                            hasItemizedDetails: false,
+                            items: [],
+                            paid: paid
+                        };
+                    }
+                });
+
+                const totalExpense = processed.reduce((sum, p) => sum + p.paid, 0);
+                const sharePerPerson = totalExpense / count;
+
+                document.getElementById('total-expense-display').textContent = formatCurrency(totalExpense);
+                document.getElementById('per-person-share-display').textContent = formatCurrency(sharePerPerson);
+
+                // محاسبه تراز هر شخص به صورت عدد صحیح رندشده (تومان) برای جلوگیری کامل از خطای ممیز شناور
+                const EPSILON = 1;
+                const creditors = [];
+                const debtors = [];
+
+                const balances = processed.map(p => {
+                    const exactNet = p.paid - sharePerPerson;
+                    const roundedNet = Math.round(exactNet);
+
+                    if (roundedNet >= EPSILON) {
+                        creditors.push({ name: p.name, amount: roundedNet });
+                    } else if (roundedNet <= -EPSILON) {
+                        debtors.push({ name: p.name, amount: Math.abs(roundedNet) });
+                    }
+
+                    return {
+                        name: p.name,
+                        paid: p.paid,
+                        net: roundedNet
+                    };
+                });
+
+                // مرتب‌سازی نزولی برای کمینه‌سازی تعداد تراکنش‌ها
+                creditors.sort((a, b) => b.amount - a.amount);
+                debtors.sort((a, b) => b.amount - a.amount);
+
+                const transactions = [];
+                let i = 0;
+                let j = 0;
+                let safetyCounter = 0;
+
+                while (i < debtors.length && j < creditors.length && safetyCounter < 1000) {
+                    safetyCounter++;
+                    const debtor = debtors[i];
+                    const creditor = creditors[j];
+
+                    const transfer = Math.min(debtor.amount, creditor.amount);
+                    if (transfer >= EPSILON) {
+                        transactions.push({
+                            from: debtor.name,
+                            to: creditor.name,
+                            amount: transfer
+                        });
+                    }
+
+                    debtor.amount -= transfer;
+                    creditor.amount -= transfer;
+
+                    if (debtor.amount < EPSILON) i++;
+                    if (creditor.amount < EPSILON) j++;
+                }
+
+                renderSettlements(transactions, totalExpense);
+                renderInvoice(processed, totalExpense, sharePerPerson, transactions);
+                renderBalances(balances);
+                buildTextReport(processed, totalExpense, sharePerPerson, transactions);
+
+                const resultsSection = document.getElementById('results-section');
+                resultsSection.classList.remove('hidden');
+
+                if (shouldScroll) {
+                    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+
+            // --- رندر کارت‌های تسویه حساب ---
+
+            function renderSettlements(transactions, totalExpense) {
+                const container = document.getElementById('settlements-container');
+
+                if (transactions.length === 0) {
+                    const msg = totalExpense === 0
+                        ? 'هنوز هیچ هزینه‌ای وارد نشده است!'
+                        : 'همه افراد دقیقاً به اندازه سهم خود هزینه کرده‌اند و هیچ‌کس به دیگری بدهکار نیست.';
+                    container.innerHTML = `
+                        <div class="settlement-empty">
+                            <p class="settlement-empty-title">همه بی‌حساب هستند!</p>
+                            <p class="settlement-empty-desc">${msg}</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // گروه‌بندی پرداخت‌ها بر اساس شخص بدهکار (پرداخت‌کننده)
+                const groupedByPayer = {};
+                transactions.forEach(t => {
+                    if (!groupedByPayer[t.from]) {
+                        groupedByPayer[t.from] = [];
+                    }
+                    groupedByPayer[t.from].push(t);
+                });
+
+                let html = '';
+                Object.entries(groupedByPayer).forEach(([payerName, transfers]) => {
+                    if (transfers.length > 1) {
+                        const totalDebt = transfers.reduce((s, t) => s + t.amount, 0);
+                        html += `
+                            <div class="settlement-multi-group">
+                                <div class="multi-group-header">
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <span class="multi-badge">پرداخت به ${toPersianDigits(transfers.length)} نفر</span>
+                                        <strong style="font-size:1rem;">${escapeHtml(payerName)}</strong>
+                                    </div>
+                                    <span style="font-size:0.8rem; color:var(--text-muted);">
+                                        مجموع بدهی: <strong style="color:var(--danger);">${formatCurrency(totalDebt)} تومان</strong>
+                                    </span>
+                                </div>
+                                ${transfers.map(t => `
+                                    <div class="multi-sub-item">
+                                        <div>
+                                            <span class="text-payer">${escapeHtml(t.from)}</span>
+                                            باید مبلغ
+                                            <span class="amount-pill">${formatCurrency(t.amount)} تومان</span>
+                                            به
+                                            <span class="text-receiver">${escapeHtml(t.to)}</span>
+                                            پرداخت کند.
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                    } else {
+                        const t = transfers[0];
+                        html += `
+                            <div class="settlement-single">
+                                <div>
+                                    <span class="text-payer">${escapeHtml(t.from)}</span>
+                                    باید مبلغ
+                                    <span class="amount-pill">${formatCurrency(t.amount)} تومان</span>
+                                    به
+                                    <span class="text-receiver">${escapeHtml(t.to)}</span>
+                                    پرداخت کند.
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+
+                container.innerHTML = html;
+            }
+
+            // --- رندر فاکتور جامع ---
+
+            function renderInvoice(processed, totalExpense, sharePerPerson, transactions) {
+                const dateEl = document.getElementById('invoice-date');
+                const bodyEl = document.getElementById('invoice-body');
+
+                try {
+                    const today = new Intl.DateTimeFormat('fa-IR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    }).format(new Date());
+                    dateEl.textContent = `تاریخ صدور: ${today} • تعداد نفرات: ${toPersianDigits(processed.length)} نفر`;
+                } catch (err) {
+                    dateEl.textContent = `تعداد نفرات: ${toPersianDigits(processed.length)} نفر`;
+                }
+
+                const spenders = processed.filter(p => p.paid > 0);
+                const nonSpenders = processed.filter(p => p.paid === 0);
+
+                // ۱. صورت‌حساب هزینه‌ها
+                let expensesHtml = '';
+                if (spenders.length === 0) {
+                    expensesHtml = `<div class="invoice-person-box" style="text-align:center; color:var(--text-muted); font-size:0.88rem;">هیچ هزینه‌ای برای افراد ثبت نشده است.</div>`;
+                } else {
+                    spenders.forEach(person => {
+                        if (person.hasItemizedDetails) {
+                            expensesHtml += `
+                                <div class="invoice-person-box">
+                                    <div class="invoice-person-header with-items">
+                                        <strong style="font-size:0.95rem;">• ${escapeHtml(person.name)}</strong>
+                                        <span class="badge-count">جمع پرداختی: ${formatCurrency(person.paid)} تومان</span>
+                                    </div>
+                                    <ul class="invoice-items-ul">
+                                        ${person.items.map(item => `
+                                            <li class="invoice-items-li">
+                                                <span>- ${escapeHtml(item.title)}</span>
+                                                <strong style="color:var(--text-main);">${formatCurrency(item.amount)} تومان</strong>
+                                            </li>
+                                        `).join('')}
+                                    </ul>
+                                </div>
+                            `;
+                        } else {
+                            expensesHtml += `
+                                <div class="invoice-person-box">
+                                    <div class="invoice-person-header">
+                                        <strong style="font-size:0.95rem;">• ${escapeHtml(person.name)}</strong>
+                                        <span class="badge-count">مبلغ هزینه: ${formatCurrency(person.paid)} تومان</span>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    });
+
+                    if (nonSpenders.length > 0) {
+                        const names = nonSpenders.map(p => escapeHtml(p.name)).join('، ');
+                        expensesHtml += `
+                            <div class="invoice-person-box" style="font-size:0.85rem; color:var(--text-muted);">
+                                افراد بدون هزینه (۰ تومان): <strong style="color:var(--text-main);">${names}</strong>
+                            </div>
+                        `;
+                    }
+                }
+
+                // ۲. خلاصه مالی
+                const summaryHtml = `
+                    <div class="invoice-summary-box">
+                        <div>
+                            <span style="color:var(--text-muted);">مجموع کل هزینه‌های گروه: </span>
+                            <strong>${formatCurrency(totalExpense)} تومان</strong>
+                        </div>
+                        <div>
+                            <span style="color:var(--text-muted);">سهم مساوی (دونگ) هر نفر: </span>
+                            <strong style="color:var(--primary);">${formatCurrency(sharePerPerson)} تومان</strong>
+                        </div>
+                    </div>
+                `;
+
+                // ۳. دستورالعمل تسویه‌حساب
+                let settlementsHtml = '';
+                if (transactions.length === 0) {
+                    settlementsHtml = `<div class="settlement-empty" style="padding:14px; text-align:right; font-size:0.88rem; color:#065f46; font-weight:600;">✅ نیازی به جابه‌جایی وجه نیست؛ حساب همه برابر است.</div>`;
+                } else {
+                    const grouped = {};
+                    transactions.forEach(t => {
+                        if (!grouped[t.from]) grouped[t.from] = [];
+                        grouped[t.from].push(t);
+                    });
+
+                    Object.entries(grouped).forEach(([payer, list]) => {
+                        if (list.length > 1) {
+                            const parts = list.map(t => `<strong style="color:var(--primary);">${formatCurrency(t.amount)} تومان</strong> به <strong style="color:var(--success);">${escapeHtml(t.to)}</strong>`).join(' و ');
+                            settlementsHtml += `
+                                <div class="invoice-person-box" style="background-color:var(--warning-bg); border-color:var(--warning-border); font-size:0.9rem;">
+                                    • <strong style="color:var(--danger);">${escapeHtml(payer)}</strong> باید در مجموع ${parts} پرداخت کند.
+                                </div>
+                            `;
+                        } else {
+                            const t = list[0];
+                            settlementsHtml += `
+                                <div class="invoice-person-box" style="font-size:0.9rem;">
+                                    • <strong style="color:var(--danger);">${escapeHtml(t.from)}</strong> باید مبلغ <strong style="color:var(--primary);">${formatCurrency(t.amount)} تومان</strong> به <strong style="color:var(--success);">${escapeHtml(t.to)}</strong> پرداخت کند.
+                                </div>
+                            `;
+                        }
+                    });
+                }
+
+                bodyEl.innerHTML = `
+                    <div class="invoice-section-block">
+                        <div class="invoice-step-title"><span class="step-num">۱</span> صورت‌حساب هزینه‌های ثبت‌شده</div>
+                        ${expensesHtml}
+                    </div>
+                    <div class="invoice-section-block">
+                        <div class="invoice-step-title"><span class="step-num">۲</span> خلاصه وضعیت مالی</div>
+                        ${summaryHtml}
+                    </div>
+                    <div class="invoice-section-block">
+                        <div class="invoice-step-title"><span class="step-num">۳</span> دستورالعمل تسویه‌حساب نهایی</div>
+                        ${settlementsHtml}
+                    </div>
+                `;
+            }
+
+            // --- رندر کارت تراز مالی افراد ---
+
+            function renderBalances(balances) {
+                const listEl = document.getElementById('balances-list');
+                listEl.innerHTML = balances.map(b => {
+                    let statusClass = 'settled';
+                    let badgeText = 'بی‌حساب';
+
+                    if (b.net > 0) {
+                        statusClass = 'creditor';
+                        badgeText = `طلبکار: ${formatCurrency(b.net)} تومان`;
+                    } else if (b.net < 0) {
+                        statusClass = 'debtor';
+                        badgeText = `بدهکار: ${formatCurrency(Math.abs(b.net))} تومان`;
+                    }
+
+                    return `
+                        <div class="balance-item ${statusClass}">
+                            <div>
+                                <div style="font-weight:700; font-size:0.92rem;">${escapeHtml(b.name)}</div>
+                                <div style="font-size:0.78rem; color:var(--text-muted);">پرداختی: ${formatCurrency(b.paid)} تومان</div>
+                            </div>
+                            <span class="balance-badge ${statusClass}">${badgeText}</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // --- ساخت متن گزارش و کپی در کلیپ‌بورد ---
+
+            function buildTextReport(processed, totalExpense, sharePerPerson, transactions) {
+                const lines = [];
+                lines.push('🧾 *فاکتور جامع و محاسبه دونگ*');
+                lines.push('━━━━━━━━━━━━━━━━━━━━');
+                lines.push('📋 *صورت‌حساب هزینه‌های افراد:*');
+
+                const spenders = processed.filter(p => p.paid > 0);
+                const nonSpenders = processed.filter(p => p.paid === 0);
+
+                if (spenders.length === 0) {
+                    lines.push('• هزینه‌ای ثبت نشده است.');
+                } else {
+                    spenders.forEach(person => {
+                        if (person.hasItemizedDetails) {
+                            lines.push(`\n👤 *${person.name}* (جمع: ${formatCurrency(person.paid)} تومان):`);
+                            person.items.forEach(item => {
+                                lines.push(`   ▫️ ${item.title}: ${formatCurrency(item.amount)} تومان`);
+                            });
+                        } else {
+                            lines.push(`\n👤 *${person.name}*: ${formatCurrency(person.paid)} تومان`);
+                        }
+                    });
+
+                    if (nonSpenders.length > 0) {
+                        const names = nonSpenders.map(p => p.name).join('، ');
+                        lines.push(`\n👤 بدون هزینه (۰ تومان): ${names}`);
+                    }
+                }
+
+                lines.push('\n━━━━━━━━━━━━━━━━━━━━');
+                lines.push(`💰 *مجموع کل هزینه‌ها:* ${formatCurrency(totalExpense)} تومان`);
+                lines.push(`⚖️ *سهم مساوی (دونگ) هر نفر:* ${formatCurrency(sharePerPerson)} تومان`);
+                lines.push('━━━━━━━━━━━━━━━━━━━━');
+                lines.push('💸 *نحوه تسویه‌حساب نهایی:*');
+
+                if (transactions.length === 0) {
+                    lines.push('✅ همه افراد بی‌حساب هستند.');
+                } else {
+                    const grouped = {};
+                    transactions.forEach(t => {
+                        if (!grouped[t.from]) grouped[t.from] = [];
+                        grouped[t.from].push(t);
+                    });
+
+                    let idx = 1;
+                    Object.entries(grouped).forEach(([payer, list]) => {
+                        if (list.length > 1) {
+                            const parts = list.map(t => `${formatCurrency(t.amount)} تومان به ${t.to}`).join(' و ');
+                            lines.push(`${toPersianDigits(idx++)}. *${payer}* باید ${parts} پرداخت کند.`);
+                        } else {
+                            const t = list[0];
+                            lines.push(`${toPersianDigits(idx++)}. *${t.from}* باید ${formatCurrency(t.amount)} تومان به *${t.to}* پرداخت کند.`);
+                        }
+                    });
+                }
+
+                lastGeneratedReport = lines.join('\n');
+            }
+
+            function copyReportToClipboard() {
+                if (!lastGeneratedReport) return;
+
+                const fallbackCopy = () => {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = lastGeneratedReport;
+                    textarea.style.position = 'fixed';
+                    textarea.style.top = '-9999px';
+                    textarea.style.opacity = '0';
+                    document.body.appendChild(textarea);
+                    textarea.focus();
+                    textarea.select();
+
+                    try {
+                        const ok = document.execCommand('copy');
+                        if (ok) {
+                            showToast('فاکتور کامل در حافظه کپی شد!', 'success');
+                        } else {
+                            showToast('کپی انجام نشد.', 'warning');
+                        }
+                    } catch (err) {
+                        showToast('مرورگر اجازه کپی خودکار نداد.', 'warning');
+                    } finally {
+                        document.body.removeChild(textarea);
+                    }
+                };
+
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(lastGeneratedReport)
+                        .then(() => showToast('فاکتور کامل در حافظه کپی شد!', 'success'))
+                        .catch(() => fallbackCopy());
+                } else {
+                    fallbackCopy();
+                }
+            }
+
+            // --- اتصال دکمه‌های ثابت صفحه ---
+
+            document.getElementById('btn-sample').addEventListener('click', loadSampleData);
+            document.getElementById('btn-reset').addEventListener('click', resetAll);
+            document.getElementById('btn-add-person').addEventListener('click', addParticipant);
+            document.getElementById('btn-calculate').addEventListener('click', () => calculateDong(true));
+            document.getElementById('btn-copy-top').addEventListener('click', copyReportToClipboard);
+            document.getElementById('btn-copy-invoice').addEventListener('click', copyReportToClipboard);
+            document.getElementById('btn-print').addEventListener('click', () => window.print());
+
+            // شروع اولیه برنامه
+            renderParticipants();
+        })();
+    </script>
+</body>
+</html>
