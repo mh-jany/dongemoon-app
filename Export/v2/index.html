@@ -1826,6 +1826,10 @@
 
         </section>
 
+        <footer class="no-print" dir="ltr" style="text-align: center; font-size: 0.78rem; color: var(--text-light); padding: 24px 16px 8px; opacity: 0.85;">
+            Made with ❤️ by Mh.
+        </footer>
+
     </main>
 
     <!-- اعلان شناور (Toast) -->
@@ -3469,6 +3473,13 @@
 
                     pCtx.textAlign = 'left';
                     pCtx.fillText(`صفحه ${toPersianDigits(idx + 1)} از ${toPersianDigits(totalPages)}`, LEFT_X, PAGE_H - 46);
+
+                    if (idx === totalPages - 1) {
+                        pCtx.direction = 'ltr';
+                        pCtx.font = `500 15px ${FONT_FAMILY}`;
+                        pCtx.textAlign = 'center';
+                        pCtx.fillText('Made with ❤️ by Mh.', PAGE_W / 2, PAGE_H - 46);
+                    }
                 });
 
                 return pages.map(p => p.canvas);
